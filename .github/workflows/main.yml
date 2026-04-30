@@ -45,5 +45,12 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          # Așteptăm până când K3s este gata să primească comenzi
+          echo "Așteptăm ca serverul să fie gata..."
+          timeout 60s bash -c 'until sudo k3s kubectl get nodes; do sleep 5; done'
+          
+          # Aplicăm fișierul YAML
           sudo k3s kubectl apply -f /home/ubuntu/k8s/deployment.yaml
+          
+          # Restartăm containerele pentru a trage ultima imagine
           sudo k3s kubectl rollout restart deployment/sirius-app-deployment
